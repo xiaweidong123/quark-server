@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean class="org.apache.ignite.configuration.IgniteConfiguration">
+        <property name="igniteInstanceName" value="quark"/>
+        <property name="peerClassLoadingEnabled" value="true"/>
+        <property name="metricsLogFrequency" value="0"/>
+        <property name="systemWorkerBlockedTimeout" value="3000000"/>
+        <property name="gridLogger">
+            <bean class="org.apache.ignite.logger.log4j2.Log4J2Logger">
+                <constructor-arg type="java.lang.String" value="${IGNITE_HOME}/config/server-log4j2.xml"/>
+            </bean>
+        </property>
+        <property name="workDirectory" value="/persistence"/>
+        <property name="userAttributes">
+            <map key-type="java.lang.String" value-type="java.lang.Boolean">
+                <entry key="DataNode" value="true"/>
+            </map>
+        </property>
+
+        <property name="dataStorageConfiguration">
+            <bean class="org.apache.ignite.configuration.DataStorageConfiguration">
+                <property name="pageSize" value="#{16 * 1024}"/>
+                <property name="walPath" value="/wal"/>
+                <property name="walArchivePath" value="/wal/archive"/>
+                <property name="defaultDataRegionConfiguration">
+                    <bean class="org.apache.ignite.configuration.DataRegionConfiguration">
+                        <property name="name" value="Default_Region"/>
+                        <property name="metricsEnabled" value="true"/>
+                        <property name="persistenceEnabled" value="true"/>
+
+                        <!-- 5 GB initial size (RAM). -->
+                        <property name="initialSize" value="#{5L * 1024 * 1024 * 1024}"/>
+
+                        <!-- 20 GB maximum size (RAM). -->
+                        <property name="maxSize" value="#{10L * 1024 * 1024 * 1024}"/>
+
+                        <!-- Enabling RANDOM_LRU eviction for this region.  -->
+                        <property name="pageEvictionMode" value="RANDOM_2_LRU"/>
+                        <property name="evictionThreshold" value="0.8"/>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+
+        <!-- Explicitly configure TCP discovery SPI to provide list of initial nodes. -->
+        <property name="discoverySpi">
+            <bean class="org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi">
+                <property name="ipFinder">
+                    <!--
+                    Enables Kubernetes IP finder and setting custom namespace name.
+                    -->
+                    <bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.kubernetes.TcpDiscoveryKubernetesIpFinder">
+                        <property name="namespace" value="ignite"/>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+    </bean>
+</beans>
