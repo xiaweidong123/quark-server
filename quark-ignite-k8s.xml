@@ -12,7 +12,7 @@
         <property name="systemWorkerBlockedTimeout" value="3000000"/>
         <property name="gridLogger">
             <bean class="org.apache.ignite.logger.log4j2.Log4J2Logger">
-                <constructor-arg type="java.lang.String" value="${IGNITE_HOME}/config/server-log4j2.xml"/>
+                <constructor-arg type="java.lang.String" value="/opt/ignite/apache-ignite/config/server-log4j2.xml"/>
             </bean>
         </property>
         <property name="workDirectory" value="/persistence"/>
